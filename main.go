@@ -102,6 +102,8 @@ func main() {
 
 	t := buildTrieFromDB()
 
+	search_trie = t
+
 	fmt.Println("Enter a search term:")
 
 	serve()

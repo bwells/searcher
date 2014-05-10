@@ -2,21 +2,45 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/bwells/trie"
 	"net/http"
+	"text/template"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func queryHandler(w http.ResponseWriter, r *http.Request) {
 
-	query := r.FormValue("query")
-	fmt.Println(query)
+	query := r.FormValue("term")
 
-	query = r.URL.Query()["query"]
-	fmt.Println(query)
+	results := multiMatch(search_trie, query)
+
+	if len(results) == 0 {
+		return
+	}
+
+	output, err := json.Marshal(results)
+
+	if err != nil {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(output)
 
 }
 
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	tpl.Execute(w, nil)
+}
+
+var search_trie *trie.Trie
+
+var tpl *template.Template
+
 func serve() {
-	http.HandleFunc("/", handler)
+
+	tpl, _ = template.ParseFiles("form.html")
+
+	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/search", queryHandler)
 	http.ListenAndServe(":9000", nil)
 }
