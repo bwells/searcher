@@ -1,10 +1,117 @@
-<h1>Search Users</h1>
+<html>
 
-<form action="/search" method="GET">
-<div>
-	<input type="text" name="term">
-</div>
-<div>
-	<input type="submit" value="Save">
-</div>
-</form>
+<head>
+
+	<script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+
+</head>
+
+<body>
+
+	<h1>Search Users</h1>
+
+	<form id="searchform">
+		<div>
+			<input type="text" name="term">
+		</div>
+		<div>
+			<input type="submit" value="Save">
+		</div>
+	</form>
+
+	<div id="results"></div>
+
+</body>
+
+<script>
+
+	$(document).ready(function() {
+
+		// // process the form
+		// $('#searchform').submit(function(event) {
+
+		// 	// get the form data
+		// 	// there are many ways to get this data using jQuery
+		// 	// (you can use the class or id also)
+		// 	var formData = {
+		// 		'term': $('input[name=term]').val()
+		// 	};
+
+		// 	// process the form
+		// 	$.ajax({
+		// 		type: 'GET',
+		// 		url : '/search', // the url where we want to POST
+		// 		data : formData, // our data object
+		// 		dataType: 'json', // what type of data do we expect back from the server
+		// 		encode: true,
+		// 		// success: function(data, status) {
+		// 		// 	console.log('success')
+		// 		// },
+		// 		// error: function() {
+		// 		// 	console.log('error')
+		// 		// }
+		// 	}).done(function(data) {
+
+		// 		var str = '<ul>';
+		// 		for (i=0; i<data.length; i++) {
+		// 			var r = data[i];
+		// 			str += '<li>' + r.name + '(' + r.email + ')' + '</li>';
+		// 		}
+		// 		str += '</ul>';
+
+		// 		$('#results').html(str);
+
+
+		// 	});
+
+		// 	// stop the form from submitting the normal way and refreshing the page
+		// 	event.preventDefault();
+		// });
+
+		var search_input = $('input[name=term]');
+
+		search_input.keyup(function(event) {
+			// get the form data
+			// there are many ways to get this data using jQuery
+			// (you can use the class or id also)
+			var formData = {
+				'term': $('input[name=term]').val()
+			};
+
+			// process the form
+			$.ajax({
+				type: 'GET',
+				url : '/search', // the url where we want to POST
+				data : formData, // our data object
+				dataType: 'json', // what type of data do we expect back from the server
+				encode: true,
+				// success: function(data, status) {
+				// 	console.log('success')
+				// },
+				// error: function() {
+				// 	console.log('error')
+				// }
+			}).done(function(data) {
+				if (data.length == 0) {
+					$('#results').html('');
+					return;
+				}
+
+				var str = '<ul>';
+				for (i=0; i<data.length; i++) {
+					var r = data[i];
+					str += '<li>' + r.name + '(' + r.email + ')' + '</li>';
+				}
+				str += '</ul>';
+
+				$('#results').html(str);
+
+
+			});
+		});
+
+	});
+
+</script>
+
+<html>

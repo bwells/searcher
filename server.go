@@ -9,21 +9,24 @@ import (
 
 func queryHandler(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+
 	query := r.FormValue("term")
 
 	results := multiMatch(search_trie, query)
 
 	if len(results) == 0 {
+		w.Write([]byte("[]"))
 		return
 	}
 
 	output, err := json.Marshal(results)
 
 	if err != nil {
+		w.Write([]byte("[]"))
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.Write(output)
 
 }
