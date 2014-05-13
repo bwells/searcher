@@ -14,9 +14,9 @@
 		<div>
 			<input type="text" name="term">
 		</div>
-		<div>
+		<!--<div>
 			<input type="submit" value="Save">
-		</div>
+		</div>-->
 	</form>
 
 	<div id="results"></div>
@@ -24,6 +24,8 @@
 </body>
 
 <script>
+
+	last_input = null;
 
 	$(document).ready(function() {
 
@@ -68,10 +70,8 @@
 		// 	event.preventDefault();
 		// });
 
-		var search_input = $('input[name=term]');
-
-		search_input.keyup(function(event) {
-			// get the form data
+		var search = function() {
+					// get the form data
 			// there are many ways to get this data using jQuery
 			// (you can use the class or id also)
 			var formData = {
@@ -108,6 +108,29 @@
 
 
 			});
+		};
+
+		search_timer = null;
+
+		var search_input = $('input[name=term]');
+		search_input.keyup(function(event) {
+
+			clearTimeout(search_timer);
+
+			var query = search_input.val();
+			if (!query) {
+				return;
+			}
+
+			// if only one character has been entered
+			// then delay 125ms before sending the query
+			if (query.length == 1) {
+				search_timer = setTimeout(search, 100);
+			// otherwise query immediately
+			} else {
+				search_timer = setTimeout(search, 1);
+			}
+
 		});
 
 	});
