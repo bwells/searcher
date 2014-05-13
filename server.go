@@ -45,5 +45,5 @@ func serve() {
 
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/search", queryHandler)
-	http.ListenAndServe(":9000", nil)
+	go http.ListenAndServe(":9000", nil)
 }
