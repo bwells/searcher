@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/bwells/trie"
-	"github.com/bwells/uniq"
+	//"github.com/bwells/uniq"
 	"github.com/deckarep/golang-set"
 	_ "github.com/go-sql-driver/mysql"
 	"os"
@@ -27,11 +27,42 @@ func (c *Contact) String() string {
 	return fmt.Sprintf("{%d %s %s}", c.Id, c.Name, c.Email)
 }
 
+// type ContactSlice []*Contact
+
+// func (s ContactSlice) Len() int {
+// 	return len(s)
+// }
+
+// func (s ContactSlice) Get(i int) uniq.Keyer {
+// 	return uniq.Keyer(s[i])
+// }
+
+// func (s ContactSlice) Set(i int, item uniq.Keyer) {
+// 	s[i] = item.(*Contact)
+// }
+
+// func (s ContactSlice) Slice(left, right int) uniq.Interface {
+// 	return s[left:right]
+// }
+
+// func (s ContactSlice) New(size int) uniq.Interface {
+// 	return make(ContactSlice, size)
+// }
+
 type byName []*Contact
 
-func (a byName) Len() int           { return len(a) }
-func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byName) Less(i, j int) bool { return a[i].Name < a[j].Name }
+func (a byName) Len() int      { return len(a) }
+func (a byName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byName) Less(i, j int) bool {
+	iname := strings.ToLower(a[i].Name)
+	jname := strings.ToLower(a[j].Name)
+
+	if iname != jname {
+		return iname < jname
+	}
+
+	return strings.ToLower(a[i].Email) < strings.ToLower(a[j].Email)
+}
 
 func buildTrieFromDB() *trie.Trie {
 
@@ -91,33 +122,23 @@ func multiMatch(t *trie.Trie, query string) []*Contact {
 		matches = matches.Intersect(mapset.NewSetFromSlice(m))
 	}
 
-	// cast matches to []uniq.Interface
-	results := make([]uniq.Interface, matches.Cardinality())
+	// copy the Set out to a slice
+	results := make([]*Contact, matches.Cardinality())
 	i := 0
 	for key := range matches.Iter() {
 		results[i] = key.(*Contact)
 		i++
 	}
 
-	// ensure the results are unique
-	results = uniq.Uniq(results)
-
-	foo := make([]*Contact, len(results))
-	for i := range results {
-		foo[i] = results[i].(*Contact)
-	}
-
 	// sort them
-	sort.Sort(byName(foo))
+	sort.Sort(byName(results))
 
-	return foo
+	return results
 }
 
 func main() {
 
-	t := buildTrieFromDB()
-
-	search_trie = t
+	search_trie = buildTrieFromDB()
 
 	fmt.Println("Enter a search term:")
 
@@ -130,7 +151,7 @@ func main() {
 			return
 		}
 
-		results := multiMatch(t, input)
+		results := multiMatch(search_trie, input)
 
 		fmt.Println(results)
 	}
