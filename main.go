@@ -9,6 +9,7 @@ import (
 	"github.com/deckarep/golang-set"
 	_ "github.com/go-sql-driver/mysql"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -25,6 +26,12 @@ func (c Contact) Key() int {
 func (c *Contact) String() string {
 	return fmt.Sprintf("{%d %s %s}", c.Id, c.Name, c.Email)
 }
+
+type byName []*Contact
+
+func (a byName) Len() int           { return len(a) }
+func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byName) Less(i, j int) bool { return a[i].Name < a[j].Name }
 
 func buildTrieFromDB() *trie.Trie {
 
@@ -63,14 +70,14 @@ func buildTrieFromDB() *trie.Trie {
 	return t
 }
 
-func multiMatch(t *trie.Trie, query string) []uniq.Interface {
+func multiMatch(t *trie.Trie, query string) []*Contact {
 
 	// strip whitespace
 	query = strings.ToLower(strings.TrimSpace(query))
 
 	// skip empty input
 	if len(query) == 0 {
-		return make([]uniq.Interface, 0)
+		return make([]*Contact, 0)
 	}
 
 	// pull matches on the first term and create a Set
@@ -95,7 +102,15 @@ func multiMatch(t *trie.Trie, query string) []uniq.Interface {
 	// ensure the results are unique
 	results = uniq.Uniq(results)
 
-	return results
+	foo := make([]*Contact, len(results))
+	for i := range results {
+		foo[i] = results[i].(*Contact)
+	}
+
+	// sort them
+	sort.Sort(byName(foo))
+
+	return foo
 }
 
 func main() {
